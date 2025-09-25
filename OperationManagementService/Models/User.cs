@@ -5,6 +5,16 @@ namespace OperationManagementService.Models;
 
 public partial class User
 {
+    public User()
+    {
+    }
+    public User(Guid userId, string userName, string password)
+    {
+        this.UserId = userId;
+        this.UserName = userName;
+        this.PasswordHash = password;
+    }
+
     public Guid UserId { get; set; }
 
     public string? UserName { get; set; }

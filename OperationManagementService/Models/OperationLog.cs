@@ -5,6 +5,16 @@ namespace OperationManagementService.Models;
 
 public partial class OperationLog
 {
+    public OperationLog()
+    {
+    }
+    public OperationLog(Guid sessionId, DateTime operationDate, string request, string response)
+    {
+        this.SessionId = sessionId;
+        this.OperationDate = operationDate;
+        this.Request = request;
+        this.Response = response;
+    }
     public int OperationId { get; set; }
 
     public Guid? SessionId { get; set; }

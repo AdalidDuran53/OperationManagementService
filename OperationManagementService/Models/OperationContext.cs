@@ -25,7 +25,9 @@ public partial class OperationContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source= name_server;Database=Operation;Trusted_Connection=True;TrustServerCertificate=True;");
+    {
+        optionsBuilder.UseSqlServer("Name=DefaultConnection");
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -37,8 +39,8 @@ public partial class OperationContext : DbContext
 
             entity.Property(e => e.OperationId).HasColumnName("OperationID");
             entity.Property(e => e.OperationDate).HasColumnType("datetime");
-            entity.Property(e => e.Request).HasMaxLength(1);
-            entity.Property(e => e.Response).HasMaxLength(1);
+            entity.Property(e => e.Request).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.Response).HasColumnType("nvarchar(max)");
             entity.Property(e => e.SessionId).HasColumnName("SessionID");
 
             entity.HasOne(d => d.Session).WithMany(p => p.OperationLogs)

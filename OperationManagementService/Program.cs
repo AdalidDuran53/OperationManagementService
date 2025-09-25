@@ -2,8 +2,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;  
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using OperationManagementService.Filters;
+using OperationManagementService.Implementation;
 using OperationManagementService.Security;
+using OperationManagementService.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +30,11 @@ builder.Services.AddApiVersioning(setup =>
     setup.AssumeDefaultVersionWhenUnspecified = true;
     setup.ReportApiVersions = true;
 });
+
+builder.Services.AddScoped<UserImplementation>();
+builder.Services.AddScoped<OperationLogImplementation>();
+builder.Services.AddDbContext<OperationContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
 
