@@ -8,7 +8,7 @@ public partial class OperationLog
     public OperationLog()
     {
     }
-    public OperationLog(Guid sessionId, DateTime operationDate, string request, string response)
+    public OperationLog(DateTime operationDate, string request, string response, Guid? sessionId = null)
     {
         this.SessionId = sessionId;
         this.OperationDate = operationDate;

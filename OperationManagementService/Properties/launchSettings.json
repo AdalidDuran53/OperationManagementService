@@ -5,7 +5,7 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "Authentication-Key": "e3f9c7a2-4b6d-4a1e-9f3d-8c2b1a7d6f91"
+        "Authentication-Key": "e3f9c7a2-4b6d-4a1e-9f3d-8c2b1a7d6f91" // Example GUID, replace with your actual key
       },
       "sslPort": 0,
       "applicationUrl": "https://localhost:7184;http://localhost:5046"

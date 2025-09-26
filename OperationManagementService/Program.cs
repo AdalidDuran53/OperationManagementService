@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;  
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using OperationManagementService.Filters;
-using OperationManagementService.Implementation;
-using OperationManagementService.Security;
+using OperationManagementService.Functionality;
 using OperationManagementService.Models;
+using OperationManagementService.OperationExceptions;
+using OperationManagementService.Security;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,13 +32,13 @@ builder.Services.AddApiVersioning(setup =>
     setup.ReportApiVersions = true;
 });
 
-builder.Services.AddScoped<UserImplementation>();
-builder.Services.AddScoped<OperationLogImplementation>();
-builder.Services.AddDbContext<OperationContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddScoped<FunctionalityBaseController>();
+builder.Services.AddScoped<UserFunctionality>();
+builder.Services.AddScoped<ServiceBaseFunctionality>();
 
 var app = builder.Build();
 
+// redirect root to swagger
 app.Use(async (context, next) => {
     if (context.Request.Path == "/")
     {
