@@ -15,7 +15,7 @@ namespace OperationManagementService.Security
         {
             configuration = config;
         }
-
+        // custom authentication handler to validate the AuthenticationKey header
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             if (!Request.Headers.ContainsKey("AuthenticationKey"))

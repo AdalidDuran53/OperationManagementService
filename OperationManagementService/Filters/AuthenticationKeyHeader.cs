@@ -6,6 +6,7 @@ namespace OperationManagementService.Filters
 {
     public class AuthenticationKeyHeader : Attribute, IOperationFilter
     {
+        // Add the AuthenticationKey header to all operations
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
         {
             operation.Parameters.Add(new OpenApiParameter
