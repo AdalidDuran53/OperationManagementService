@@ -8,7 +8,8 @@ USE Operation;
 CREATE TABLE Operation.dbo.Users (
     UserID UNIQUEIDENTIFIER PRIMARY KEY, -- UserID, must be UNIQUEIDENTIFIER
     UserName NVARCHAR(50) UNIQUE,         -- User name, must be UNIQUE
-    PasswordHash NVARCHAR(256) NOT NULL,          -- PasswordHash, required
+    PasswordHash NVARCHAR(MAX) NOT NULL,          -- PasswordHash, required
+    PasswordSalst NVARCHAR(MAX) NOT NULL,          -- PasswordHash, required
     isDeleted BIT DEFAULT 0 -- isDeleted, DEFAULT 0 => isDeleted = false
 );
 
@@ -24,8 +25,8 @@ CREATE TABLE Operation.dbo.OperationLog (
     OperationID INT IDENTITY(1,1) PRIMARY KEY, 
     SessionID UNIQUEIDENTIFIER,      -- Clave foranea   
     OperationDate DATETIME,         
-    Request NVARCHAR,          
-    Response NVARCHAR
+    Request NVARCHAR(MAX),          
+    Response NVARCHAR(MAX)
     FOREIGN KEY (SessionID) REFERENCES SessionLog(SessionID)
 );
 
