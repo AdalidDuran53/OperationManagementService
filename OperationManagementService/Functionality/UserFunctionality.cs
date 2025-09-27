@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OperationManagementService.Models;
 using OperationManagementService.OperationExceptions;
 
@@ -18,6 +19,14 @@ namespace OperationManagementService.Functionality
                 using (var context = new OperationContext())
                 {
                     context.Users.Add(newUser);
+                    // check for duplicate user names
+                    var isInvalidUserName = await context.Users.AnyAsync(s => s.UserName.Equals(newUser.UserName));
+                    if (isInvalidUserName)
+                    {
+                        // if the user name already exists, throw an error
+                        var exception = this._errorService.GetError("OMS-USERNAME-ERROR");
+                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                    }
                     await context.SaveChangesAsync();
                 }
                 // return the result

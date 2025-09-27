@@ -26,7 +26,7 @@ namespace OperationManagementService.Controllers.Implementation
 
         [HttpPost]
         [Route("~/{version::apiVersion}/Users/")]
-        public override async Task<IActionResult> Create([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] string userName, [Required] string password)
+        public override async Task<IActionResult> AddUser([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] string userName, [Required] string password)
         {
             // Log the request
             Dictionary<string, object> request = new Dictionary<string, object> { { "CreateNewUserRequest", new object[] { "version: " + version, "userName: " + userName } } };
