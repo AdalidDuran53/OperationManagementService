@@ -9,11 +9,13 @@ public partial class User: IValidation
     public User()
     {
     }
-    public User(Guid userId, string userName, string password)
+
+    public User(Guid userId, string userName, string password,string salst)
     {
         this.UserId = userId;
         this.UserName = userName;
         this.PasswordHash = password;
+        this.PasswordSalst = salst;
     }
 
     public Guid UserId { get; set; }
@@ -21,6 +23,7 @@ public partial class User: IValidation
     public string? UserName { get; set; }
 
     public string PasswordHash { get; set; } = null!;
+    public string PasswordSalst { get; set; } = null!;
 
     public bool? IsDeleted { get; set; }
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OperationManagementService.Models;
 using OperationManagementService.OperationExceptions;
+using System.Security.Cryptography;
 
 namespace OperationManagementService.Functionality
 {
@@ -29,16 +30,28 @@ namespace OperationManagementService.Functionality
             }
         }
 
+        // hash the password
+        public static (string Hash, string Salt) HashPassword(string password)
+        {   // generate a salt
+            var saltBytes = RandomNumberGenerator.GetBytes(16);
+            var salt = Convert.ToBase64String(saltBytes);
+            // hash the password with the salt
+            using var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 10000, HashAlgorithmName.SHA256);
+            var hash = Convert.ToBase64String(pbkdf2.GetBytes(32));
+
+            return (hash, salt);
+        }
+
 
         // verify the password
-        public bool HashingHelperVerify(string plainText, string hashedPassword)
+        public bool VerifyPassword(string password, string storedHash, string storedSalt)
         {
-            // use the PasswordHasher to verify the password
-            var hasher = new PasswordHasher<object>();
-            // verify the password
-            var result = hasher.VerifyHashedPassword(null, hashedPassword, plainText);
-            bool isValid = result == PasswordVerificationResult.Success;
-            return isValid;
+            // hash the password with the stored salt
+            var saltBytes = Convert.FromBase64String(storedSalt);
+            using var pbkdf2 = new Rfc2898DeriveBytes(password, saltBytes, 10000, HashAlgorithmName.SHA256);
+            var hash = Convert.ToBase64String(pbkdf2.GetBytes(32));
+            // compare the hash with the stored hash
+            return hash == storedHash;
         }
     }
 }
