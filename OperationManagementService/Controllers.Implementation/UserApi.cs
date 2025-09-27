@@ -25,7 +25,7 @@ namespace OperationManagementService.Controllers.Implementation
         }
 
         [HttpPost]
-        [Route("~/{version::apiVersion}/Users/")]
+        [Route("~/{version::apiVersion}/Users/AddUser")]
         public override async Task<IActionResult> AddUser([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] string userName, [Required] string password)
         {
             // Log the request
@@ -49,6 +49,34 @@ namespace OperationManagementService.Controllers.Implementation
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { success = false, code = excep.ErrorCode, message = excep.Message, details = excep.Details});
+            }
+        }
+
+        [HttpPost]
+        [Route("~/{version::apiVersion}/Users/LoginUser")]
+        public override async Task<IActionResult> Login([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] string userName, [Required] string password)
+        {
+            // Log the request
+            Dictionary<string, object> request = new Dictionary<string, object> { { "LoginRequest", new object[] { "version: " + version, "userName: " + userName } } };
+            try
+            {
+                // Call the implementation
+                var result = await _userFunctionality.LoginUser(userName, password);
+                // Log the response
+                Dictionary<string, object> response = new Dictionary<string, object> { { "LoginResponse", result } };
+                // Log the operation
+                _serviceBaseFunctionality.LogOperation(request, response);
+                // return the result
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorLoginResponse", ex } };
+                _serviceBaseFunctionality.LogOperation(request, response);
+                // if the exception is an OperationException, return a bad request with the error details
+                OperationException excep = ((OperationException)ex);
+                return this.BadRequest(new { success = false, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
             }
         }
     }

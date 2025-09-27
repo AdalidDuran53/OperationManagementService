@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OperationManagementService.Models;
 using OperationManagementService.OperationExceptions;
@@ -26,6 +27,18 @@ namespace OperationManagementService.Functionality
                 // throw the operation exception
                 throw new OperationException(errorCode: erroritemService.Code, message: erroritemService.Message, details: erroritemService.Details);
             }
+        }
+
+
+        // verify the password
+        public bool HashingHelperVerify(string plainText, string hashedPassword)
+        {
+            // use the PasswordHasher to verify the password
+            var hasher = new PasswordHasher<object>();
+            // verify the password
+            var result = hasher.VerifyHashedPassword(null, hashedPassword, plainText);
+            bool isValid = result == PasswordVerificationResult.Success;
+            return isValid;
         }
     }
 }
