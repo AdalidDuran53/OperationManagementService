@@ -105,7 +105,8 @@ public partial class OperationContext : DbContext
             entity.Property(e => e.IsDeleted)
                 .HasDefaultValue(false)
                 .HasColumnName("isDeleted");
-            entity.Property(e => e.PasswordHash).HasMaxLength(256);
+            entity.Property(e => e.PasswordHash).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.PasswordSalst).HasColumnType("nvarchar(max)");
             entity.Property(e => e.UserName).HasMaxLength(50);
         });
 
