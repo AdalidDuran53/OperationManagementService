@@ -13,8 +13,10 @@ namespace OperationManagementService.Functionality
         {
             try
             {
+
+                var pass = HashPassword(password);
                 // build the user object
-                User newUser = new User(userId: Guid.NewGuid(), userName: userName, password: password);
+                User newUser = new User(userId: Guid.NewGuid(), userName: userName, password: pass.Hash, salst: pass.Salt);
                 // validate the user object
                 this.ValidateModel(newUser);
                 // save the user object
@@ -32,7 +34,7 @@ namespace OperationManagementService.Functionality
                     await context.SaveChangesAsync();
                 } 
                 // return the result
-                var result = Ok(new { success = true, message = "Data saved successfully" });
+                var result = Ok(new { success = true, message = "Data saved successfully." });
                 return result;
             }
             catch (Exception ex)
@@ -52,8 +54,10 @@ namespace OperationManagementService.Functionality
         {
             try
             {
+                // hash the password
+                var pass = HashPassword(password);
                 // build the user object
-                User DataUser = new User(userId: Guid.NewGuid(), userName: userName, password: password);
+                User DataUser = new User(userId: Guid.NewGuid(), userName: userName, password: pass.Hash, salst: pass.Salt);
                 // validate the user object
                 this.ValidateModel(DataUser);
                 // check the user credentials
@@ -63,14 +67,14 @@ namespace OperationManagementService.Functionality
                     var user = await context.Users
                     .FirstOrDefaultAsync(u => u.UserName == DataUser.UserName && u.IsDeleted == false);
                     // if the user is not found or the password does not match, throw an error
-                    if (user == null || !this.HashingHelperVerify(DataUser.PasswordHash, user.PasswordHash))
+                    if (user == null || !this.VerifyPassword(password, user.PasswordHash, user.PasswordSalst))
                     {
                         var exception = this._errorService.GetError("OMS-LOGIN-ERROR");
                         throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
                     }
                 }
                 // return the result
-                var result = Ok(new { success = true, message = "Login successfully" });
+                var result = Ok(new { success = true, message = "Login successfully." });
                 return result;
             }
             catch (Exception ex)
