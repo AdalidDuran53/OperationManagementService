@@ -61,7 +61,7 @@ namespace OperationManagementService.Functionality
         #endregion
 
         #region Session Management
-        public async Task<ActionResult> InitSession(Guid userId)
+        public async Task<CustomResponse> InitSession(Guid userId)
         {
             try
             {
@@ -72,7 +72,7 @@ namespace OperationManagementService.Functionality
                 {
                     context.SessionLogs.Add(sessionLog);
                     await context.SaveChangesAsync();
-                    return Ok(new { success = true, message = "Session initialized successfully.", sessionId = sessionLog.SessionId });
+                    return new CustomResponse(message: "Session initialized successfully.", userId: userId, data: sessionLog.SessionId);
                 }
             }
             catch (Exception ex)

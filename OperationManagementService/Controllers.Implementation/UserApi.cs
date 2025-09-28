@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Newtonsoft.Json;
 using OperationManagementService.Functionality;
 using OperationManagementService.Models;
 using OperationManagementService.OperationExceptions;
@@ -63,7 +65,8 @@ namespace OperationManagementService.Controllers.Implementation
                 // Call the implementation
                 var result = await _userFunctionality.LoginUser(userName, password);
                 // Log the response
-                Dictionary<string, object> response = new Dictionary<string, object> { { "LoginResponse", result } };
+                var sessionLogResponse = _serviceBaseFunctionality.InitSession(result.UserId);
+                Dictionary<string, object> response = new Dictionary<string, object> { { "LoginResponse", result }, { "SessionLogResponse", sessionLogResponse.Result } };
                 // Log the operation
                 _serviceBaseFunctionality.LogOperation(request, response);
                 // return the result
