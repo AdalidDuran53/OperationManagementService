@@ -14,6 +14,8 @@ namespace OperationManagementService.Functionality
         {
             _errorService = new ErrorServiceModel();
         }
+
+        #region ValidationModel
         protected virtual void ValidateModel(IValidation model)
         {
             // init operation exception code
@@ -30,6 +32,9 @@ namespace OperationManagementService.Functionality
             }
         }
 
+        #endregion
+
+        #region Password Hashing and Verification
         // hash the password
         public static (string Hash, string Salt) HashPassword(string password)
         {   // generate a salt
@@ -53,5 +58,33 @@ namespace OperationManagementService.Functionality
             // compare the hash with the stored hash
             return hash == storedHash;
         }
+        #endregion
+
+        #region Session Management
+        public async Task<ActionResult> InitSession(Guid userId)
+        {
+            try
+            {
+                SessionLog sessionLog = new SessionLog(userId: userId, sessionId: Guid.NewGuid(), initSession: DateTime.Now);
+
+                // save the operation log object
+                using (var context = new OperationContext())
+                {
+                    context.SessionLogs.Add(sessionLog);
+                    await context.SaveChangesAsync();
+                    return Ok(new { success = true, message = "Session initialized successfully.", sessionId = sessionLog.SessionId });
+                }
+            }
+            catch (Exception ex)
+            {
+                // if the exception is an OperationException, rethrow it
+                if (ex is OperationException)
+                    throw ex;
+                // otherwise, throw a general error
+                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+            }
+        }
+        #endregion
     }
 }
