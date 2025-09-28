@@ -72,11 +72,15 @@ namespace OperationManagementService.Functionality
                 // save the operation log object
                 using (var context = new OperationContext())
                 {
+                    // init data list
                     List<object> data = new List<object>();
+                    // check for existing sessions for the user and close them
                     var existingSession = await context.SessionLogs.Where(s => s.UserId == userId && s.EndSession == null).ToListAsync();
+                    // close existing sessions
                     foreach (var sessionitem in existingSession)
                     {
                         var result = CloseSession(sessionitem.SessionId);
+                        // add the result to the data list
                         data.Add(result.Result);
                     }
                     context.SessionLogs.Add(sessionLog);
@@ -101,15 +105,19 @@ namespace OperationManagementService.Functionality
             {
                 using (var context = new OperationContext())
                 {
+                    // find the session log by session id
                     var sessionLog = await context.SessionLogs.FirstOrDefaultAsync(s => s.SessionId == sessionId && s.EndSession == null);
                     if (sessionLog == null || sessionId == null)
                     {
+                        // if the session log is not found, throw an error
                         var exception = this._errorService.GetError("OMS-SESSION-ERROR");
                         throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
                     }
+                    // close the session
                     sessionLog.EndSession = DateTime.Now;
                     context.SessionLogs.Update(sessionLog);
                     await context.SaveChangesAsync();
+                    // prepare the data to return
                     Dictionary<string, object> data = new Dictionary<string, object>
                     {
                         { "UserId", sessionLog.UserId },
