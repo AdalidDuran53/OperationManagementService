@@ -50,7 +50,7 @@ namespace OperationManagementService.Functionality
 
 
 
-        public async Task<ActionResult> LoginUser(string userName, string password)
+        public async Task<CustomResponse> LoginUser(string userName, string password)
         {
             try
             {
@@ -72,10 +72,10 @@ namespace OperationManagementService.Functionality
                         var exception = this._errorService.GetError("OMS-LOGIN-ERROR");
                         throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
                     }
+
+                    // return the result
+                    return new CustomResponse(message: "Login successfully.", userId: user.UserId);
                 }
-                // return the result
-                var result = Ok(new { success = true, message = "Login successfully." });
-                return result;
             }
             catch (Exception ex)
             {

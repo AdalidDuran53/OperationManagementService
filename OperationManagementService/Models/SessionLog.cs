@@ -5,6 +5,16 @@ namespace OperationManagementService.Models;
 
 public partial class SessionLog
 {
+    public SessionLog()
+    {
+    }
+
+    public SessionLog(Guid sessionId, Guid? userId, DateTime initSession)
+    {
+        this.SessionId = sessionId;
+        this.UserId = userId;
+        this.InitSession = initSession;
+    }
     public Guid SessionId { get; set; }
 
     public Guid? UserId { get; set; }
