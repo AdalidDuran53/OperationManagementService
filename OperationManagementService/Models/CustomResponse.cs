@@ -9,12 +9,14 @@ public class CustomResponse : ActionResult
 {
     public string Message { get; }
     public Guid UserId { get; }
+    public Guid? SessionId { get; }
     public object Data { get; }
 
-    public CustomResponse(string message, Guid userId, object data = null)
+    public CustomResponse(string message, Guid userId, Guid? sessionId = null, object data = null)
     {
         this.Message = message;
         this.UserId = userId;
+        this.SessionId = sessionId;
         this.Data = data;
     }
 
