@@ -69,8 +69,8 @@ namespace OperationManagementService.Controllers.Implementation
                 Dictionary<string, object> response = new Dictionary<string, object> { { "LoginResponse", result }, { "SessionLogResponse", sessionLogResponse.Result } };
                 // Log the operation
                 _serviceBaseFunctionality.LogOperation(request, response);
-                // return the result
-                return Ok(result);
+                // return the result // OMS-13 update to include session id in the response
+                return Ok(new CustomResponse(message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.Result.SessionId));
             }
             catch (Exception ex)
             {
