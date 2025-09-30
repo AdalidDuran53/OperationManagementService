@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 
@@ -10,6 +11,7 @@ namespace OperationManagementService.Controllers
     {
 
         [HttpPost]
+        [EnableRateLimiting("IpPolicy")]
         [Route("~/{version}/Users/")]
         [SwaggerOperation(OperationId = "CreateUser")]
         [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
@@ -18,6 +20,7 @@ namespace OperationManagementService.Controllers
         public abstract Task<IActionResult> AddUser([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] string userName, [Required] string password);
 
         [HttpPost]
+        [EnableRateLimiting("IpPolicy")]
         [Route("~/{version}/Users/")]
         [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
         [SwaggerResponse(statusCode: 400, type: typeof(ActionResult), description: "Bab Request")]
@@ -25,6 +28,7 @@ namespace OperationManagementService.Controllers
         public abstract Task<IActionResult> Login([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] string userName, [Required] string password);
 
         [HttpDelete]
+        [EnableRateLimiting("IpPolicy")]
         [Route("~/{version}/Users/")]
         [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
         [SwaggerResponse(statusCode: 400, type: typeof(ActionResult), description: "Bab Request")]
@@ -32,6 +36,7 @@ namespace OperationManagementService.Controllers
         public abstract Task<IActionResult> DeleteUser([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] Guid userId, [Required] Guid sessionId);
 
         [HttpPut]
+        [EnableRateLimiting("IpPolicy")]
         [Route("~/{version}/Users/")]
         [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
         [SwaggerResponse(statusCode: 400, type: typeof(ActionResult), description: "Bab Request")]
