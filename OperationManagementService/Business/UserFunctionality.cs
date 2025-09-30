@@ -26,13 +26,13 @@ namespace OperationManagementService.Business
                     {
                         // if the user name already exists, throw an error
                         var exception = this._errorService.GetError("OMS-USERNAME-ERROR");
-                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
                     }
                     // map the user object to the entity model
                     var user = Mapster.TypeAdapter.Adapt<Models.User>(newUser);
                     context.Users.Add(user);
                     await context.SaveChangesAsync();
-                } 
+                }
                 // return the result
                 var result = Ok(new { success = true, message = "Data saved successfully." });
                 return result;
@@ -44,10 +44,9 @@ namespace OperationManagementService.Business
                     throw ex;
                 // otherwise, throw a general error
                 var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
-                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
             }
         }
-
 
 
         public async Task<CustomResponse> LoginUser(string userName, string password)
@@ -70,7 +69,7 @@ namespace OperationManagementService.Business
                     if (user == null || !this.VerifyPassword(password, user.PasswordHash, user.PasswordSalst))
                     {
                         var exception = this._errorService.GetError("OMS-LOGIN-ERROR");
-                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
                     }
 
                     // return the result
@@ -84,7 +83,47 @@ namespace OperationManagementService.Business
                     throw ex;
                 // otherwise, throw a general error
                 var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
-                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
+            }
+        }
+
+        public async Task<CustomResponse> DeleteUser( Guid userId, Guid sessionId)
+        {
+            try
+            {
+                using (var context = new Models.OperationContext())
+                {
+                    // find the user by user name
+                    var user = await context.Users
+                    .FirstOrDefaultAsync(u => u.UserId == userId && u.IsDeleted == false);
+                    // load the session logs for the user
+                    user.SessionLogs = await context.SessionLogs.Where(s => s.UserId == userId && s.EndSession == null).ToListAsync();
+                    // if the user is not found or the session id does not match, throw an error
+                    if (user == null || !user.SessionLogs.Any(s => s.SessionId == sessionId))
+                    {
+                        var exception = this._errorService.GetError("OMS-SESSION-ERROR");
+                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
+                    }
+                    else
+                    {
+                        // mark the user as deleted
+                        user.IsDeleted = true;
+                        context.Users.Update(user);
+                        await context.SaveChangesAsync();
+                    }
+
+                    // return the result
+                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Deleted user successfully.", userId: user.UserId, sessionId: sessionId);
+                }
+            }
+            catch (Exception ex)
+            {
+                // if the exception is an OperationException, rethrow it
+                if (ex is OperationException)
+                    throw ex;
+                // otherwise, throw a general error
+                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, sessionId: sessionId);
             }
         }
     }
