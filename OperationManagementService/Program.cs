@@ -1,8 +1,10 @@
+﻿using EntitiesCustom;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using OperationManagementService.Business;
 using OperationManagementService.Filters;
 using OperationManagementService.Security;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,43 @@ builder.Services.AddApiVersioning(setup =>
 builder.Services.AddScoped<FunctionalityBaseController>();
 builder.Services.AddScoped<UserFunctionality>();
 builder.Services.AddScoped<ServiceBaseFunctionality>();
+builder.Services.Configure<RateLimitingOptions>(
+    builder.Configuration.GetSection("RateLimiting"));
+
+// Rate limiting configuration
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("IpPolicy", context =>
+    {
+        // Get configuration from appsettings
+        var config = builder.Configuration.GetSection("RateLimiting").Get<RateLimitingOptions>();
+        // Use the IP address as the partition key
+        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        // Allow a maximum of 5 request per minute per IP address
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = config.PermitLimit, 
+                Window = TimeSpan.FromSeconds(config.WindowSeconds),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+    });
+
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    // Custom response for rate limited requests
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.Headers["Retry-After"] = "60"; // clients should retry after 60 seconds
+        await context.HttpContext.Response.WriteAsJsonAsync(new
+        {
+            StatusCode = StatusCodes.Status429TooManyRequests,
+            Message = "Too many requests. Please try again later."
+        }, cancellationToken: token);
+    };
+});
 
 var app = builder.Build();
 
@@ -54,6 +93,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.UseRateLimiter();
 
 app.MapControllers();
 
