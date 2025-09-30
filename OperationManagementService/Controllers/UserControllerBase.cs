@@ -25,6 +25,13 @@ namespace OperationManagementService.Controllers
         public abstract Task<IActionResult> Login([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] string userName, [Required] string password);
 
         [HttpDelete]
+        [Route("~/{version}/Users/")]
+        [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
+        [SwaggerResponse(statusCode: 400, type: typeof(ActionResult), description: "Bab Request")]
+        [SwaggerResponse(statusCode: 401, type: typeof(ActionResult), description: "Unauthorized")]
+        public abstract Task<IActionResult> DeleteUser([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] Guid userId, [Required] Guid SessionId);
+
+        [HttpDelete]
         [Route("~/Delete")]
         [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
         [SwaggerResponse(statusCode: 400, type: typeof(ActionResult), description: "Bab Request")]

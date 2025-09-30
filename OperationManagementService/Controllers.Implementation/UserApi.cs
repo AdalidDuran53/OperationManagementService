@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OperationExceptions;
 using OperationManagementService.Business;
+using OperationManagementService.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace OperationManagementService.Controllers.Implementation
@@ -78,6 +79,37 @@ namespace OperationManagementService.Controllers.Implementation
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode =StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
+            }
+        }
+
+
+        [HttpDelete]
+        [Route("~/{version::apiVersion}/Users/DeleteUser")]
+        public override async Task<IActionResult> DeleteUser([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId)
+        {
+            // Log the request
+            Dictionary<string, object> request = new Dictionary<string, object> { { "DeleteUserRequest", new object[] { "version: " + version, "userName: " + userId, "sessionId: " + sessionId } } };
+            try
+            {
+                // Call the implementation
+                var result = await _userFunctionality.DeleteUser(userId, sessionId);
+                // close all sessions for the user
+                var sessionLogResponse = _serviceBaseFunctionality.CloseAllSession(userId, sessionId);
+                // Log the response
+                Dictionary<string, object> response = new Dictionary<string, object> { { "DeleteUserResponse", result }, { "SessionLogResponse", sessionLogResponse.Result } };
+                // Log the operation
+                _serviceBaseFunctionality.LogOperation(request, response);
+                // return the result
+                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.Result.SessionId));
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorDeleteUserResponse", ex } };
+                _serviceBaseFunctionality.LogOperation(request, response);
+                // if the exception is an OperationException, return a bad request with the error details
+                OperationException excep = ((OperationException)ex);
+                return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
             }
         }
     }

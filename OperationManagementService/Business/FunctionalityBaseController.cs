@@ -27,7 +27,7 @@ namespace OperationManagementService.Business
                 // get the error item from the error service
                 ErroritemServiceModel erroritemService = _errorService.GetError(operationExceptionCode);
                 // throw the operation exception
-                throw new OperationException(errorCode: erroritemService.Code, message: erroritemService.Message, details: erroritemService.Details);
+                throw new OperationException(errorCode: erroritemService.Code, message: erroritemService.Message, details: erroritemService.Details, new Guid()); // TODO: add SessionId
             }
         }
 
@@ -70,17 +70,7 @@ namespace OperationManagementService.Business
                 // save the operation log object
                 using (var context = new Models.OperationContext())
                 {
-                    // init data list
-                    List<object> data = new List<object>();
-                    // check for existing sessions for the user and close them
-                    var existingSession = await context.SessionLogs.Where(s => s.UserId == userId && s.EndSession == null).ToListAsync();
-                    // close existing sessions
-                    foreach (var sessionitem in existingSession)
-                    {
-                        var result = CloseSession(sessionitem.SessionId);
-                        // add the result to the data list
-                        data.Add(result.Result);
-                    }
+                    var data = CloseAllSession(userId, sessionLog.SessionId);
                     // map the operation log object to the entity model
                     var session = Mapster.TypeAdapter.Adapt<Models.SessionLog>(sessionLog);
                     context.SessionLogs.Add(session);
@@ -95,10 +85,41 @@ namespace OperationManagementService.Business
                     throw ex;
                 // otherwise, throw a general error
                 var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
-                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
             }
         }
+        public async Task<CustomResponse> CloseAllSession(Guid userId, Guid sessionId)
+        {
+            try
+            {
+                using (var context = new Models.OperationContext())
+                {
 
+                    // init data list
+                    List<object> data = new List<object>();
+                    // check for existing sessions for the user and close them
+                    var existingSession = await context.SessionLogs.Where(s => s.UserId == userId && s.EndSession == null).ToListAsync();
+                    // close existing sessions
+                    foreach (var sessionitem in existingSession)
+                    {
+                        // close the session
+                        var result = CloseSession(sessionitem.SessionId);
+                        // add the result to the data list
+                        data.Add(result.Result);
+                    }
+                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Session closed successfully.", userId: userId, sessionId: sessionId, data: data);
+                }
+            }
+            catch (Exception ex)
+            {
+                // if the exception is an OperationException, rethrow it
+                if (ex is OperationException)
+                    throw ex;
+                // otherwise, throw a general error
+                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, sessionId: sessionId);
+            }
+        }
         public async Task<CustomResponse> CloseSession(Guid sessionId)
         {
             try
@@ -111,7 +132,7 @@ namespace OperationManagementService.Business
                     {
                         // if the session log is not found, throw an error
                         var exception = this._errorService.GetError("OMS-SESSION-ERROR");
-                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, sessionId: sessionId);
                     }
                     // close the session
                     sessionLog.EndSession = DateTime.Now;
@@ -135,7 +156,7 @@ namespace OperationManagementService.Business
                     throw ex;
                 // otherwise, throw a general error
                 var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
-                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, sessionId: sessionId);
             }
         }
         #endregion
