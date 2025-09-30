@@ -8,13 +8,6 @@ public partial class OperationLog
     public OperationLog()
     {
     }
-    public OperationLog(DateTime operationDate, string request, string response, Guid? sessionId = null)
-    {
-        this.SessionId = sessionId;
-        this.OperationDate = operationDate;
-        this.Request = request;
-        this.Response = response;
-    }
     public int OperationId { get; set; }
 
     public Guid? SessionId { get; set; }

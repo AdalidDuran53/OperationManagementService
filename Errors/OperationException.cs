@@ -1,6 +1,4 @@
-﻿using System.Xml.Serialization;
-
-namespace OperationManagementService.OperationExceptions
+﻿namespace OperationExceptions
 {
     public class OperationException : Exception
     {

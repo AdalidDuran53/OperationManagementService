@@ -1,8 +1,7 @@
-﻿using Newtonsoft.Json;
-using OperationManagementService.Models;
-using System.Xml.Serialization;
+﻿using EntitiesCustom;
+using Newtonsoft.Json;
 
-namespace OperationManagementService.Functionality
+namespace OperationManagementService.Business
 {
     public class ServiceBaseFunctionality : FunctionalityBaseController
     {
@@ -26,9 +25,11 @@ namespace OperationManagementService.Functionality
                 // create a new operation log object
                 OperationLog newLogOperation = new OperationLog(sessionId: sessionId, operationDate: DateTime.Now, request: request, response: response);
                 // save the operation log object
-                using (var context = new OperationContext())
+                using (var context = new Models.OperationContext())
                 {
-                    context.OperationLogs.Add(newLogOperation);
+                    // map the operation log object to the entity model
+                    var newLog = Mapster.TypeAdapter.Adapt<Models.OperationLog>(newLogOperation);
+                    context.OperationLogs.Add(newLog);
                     await context.SaveChangesAsync();
                 }
             }

@@ -1,11 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using EntitiesCustom;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Versioning;
 using Newtonsoft.Json;
-using OperationManagementService.Functionality;
-using OperationManagementService.Models;
-using OperationManagementService.OperationExceptions;
+using OperationExceptions;
+using OperationManagementService.Business;
 using System.ComponentModel.DataAnnotations;
 
 namespace OperationManagementService.Controllers.Implementation
@@ -50,12 +48,12 @@ namespace OperationManagementService.Controllers.Implementation
                 _serviceBaseFunctionality.LogOperation(request, response);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
-                return this.BadRequest(new { success = false, code = excep.ErrorCode, message = excep.Message, details = excep.Details});
+                return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details});
             }
         }
 
         [HttpPost]
-        [Route("~/{version::apiVersion}/Users/LoginUser")]
+        [Route("~/{version::apiVersion}/Users/Login")]
         public override async Task<IActionResult> Login([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] string userName, [Required] string password)
         {
             // Log the request
@@ -70,7 +68,7 @@ namespace OperationManagementService.Controllers.Implementation
                 // Log the operation
                 _serviceBaseFunctionality.LogOperation(request, response);
                 // return the result // OMS-13 update to include session id in the response
-                return Ok(new CustomResponse(message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.Result.SessionId));
+                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.Result.SessionId));
             }
             catch (Exception ex)
             {
@@ -79,7 +77,7 @@ namespace OperationManagementService.Controllers.Implementation
                 _serviceBaseFunctionality.LogOperation(request, response);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
-                return this.BadRequest(new { success = false, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
+                return this.BadRequest(new { StatusCode =StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
             }
         }
     }

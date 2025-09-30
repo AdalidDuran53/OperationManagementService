@@ -23,4 +23,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EntitiesCustom\EntitiesCustom.csproj" />
+    <ProjectReference Include="..\Errors\OperationExceptions.csproj" />
+  </ItemGroup>
+
 </Project>

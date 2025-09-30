@@ -1,22 +1,7 @@
-﻿using OperationManagementService.OperationExceptions;
-using System;
-using System.Collections.Generic;
+﻿namespace OperationManagementService.Models;
 
-namespace OperationManagementService.Models;
-
-public partial class User: IValidation
+public partial class User
 {
-    public User()
-    {
-    }
-
-    public User(Guid userId, string userName, string password,string salst)
-    {
-        this.UserId = userId;
-        this.UserName = userName;
-        this.PasswordHash = password;
-        this.PasswordSalst = salst;
-    }
 
     public Guid UserId { get; set; }
 
@@ -30,20 +15,5 @@ public partial class User: IValidation
     public virtual ICollection<SessionLog> SessionLogs { get; set; } = new List<SessionLog>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
-
-    // Validate the user object
-    public string Validate(string operationExceptionCode)
-    {
-        if (String.IsNullOrEmpty(this.UserName))
-            operationExceptionCode = "OMS-USERNAME-ERROR";
-        else if (this.UserName.Length > 50)
-            operationExceptionCode = "OMS-USERNAME-ERROR";
-        else if (String.IsNullOrEmpty(this.PasswordHash))
-            operationExceptionCode = "OMS-PASSWORD-ERROR";
-        else if (this.PasswordHash.Length > 256)
-            operationExceptionCode = "OMS-PASSWORD-ERROR";
-
-        return operationExceptionCode;
-    }
 
 }

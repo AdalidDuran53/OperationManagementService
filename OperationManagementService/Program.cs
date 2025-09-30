@@ -1,12 +1,7 @@
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;  
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using OperationManagementService.Business;
 using OperationManagementService.Filters;
-using OperationManagementService.Functionality;
-using OperationManagementService.Models;
-using OperationManagementService.OperationExceptions;
 using OperationManagementService.Security;
 
 var builder = WebApplication.CreateBuilder(args);

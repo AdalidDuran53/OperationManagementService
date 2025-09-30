@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-namespace OperationManagementService.OperationExceptions
+﻿namespace OperationExceptions
 {
     public interface IValidation
     {

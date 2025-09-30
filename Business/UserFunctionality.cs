@@ -1,11 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
+﻿using EntitiesCustom;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using OperationExceptions;
 using OperationManagementService.Models;
-using OperationManagementService.OperationExceptions;
-
-namespace OperationManagementService.Functionality
+namespace Business
 {
     public class UserFunctionality : FunctionalityBaseController
     {
@@ -27,7 +24,7 @@ namespace OperationManagementService.Functionality
                     if (isInvalidUserName)
                     {
                         // if the user name already exists, throw an error
-                        var exception = this._errorService.GetError("OMS-USERNAME-ERROR");
+                        var exception = _errorService.GetError("OMS-USERNAME-ERROR");
                         throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
                     }
                     context.Users.Add(newUser);
@@ -43,7 +40,7 @@ namespace OperationManagementService.Functionality
                 if (ex is OperationException)
                     throw ex;
                 // otherwise, throw a general error
-                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                var exception = _errorService.GetError("OMS-GENERAL-ERROR");
                 throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
             }
         }
@@ -69,7 +66,7 @@ namespace OperationManagementService.Functionality
                     // if the user is not found or the password does not match, throw an error
                     if (user == null || !this.VerifyPassword(password, user.PasswordHash, user.PasswordSalst))
                     {
-                        var exception = this._errorService.GetError("OMS-LOGIN-ERROR");
+                        var exception = _errorService.GetError("OMS-LOGIN-ERROR");
                         throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
                     }
 
@@ -83,7 +80,7 @@ namespace OperationManagementService.Functionality
                 if (ex is OperationException)
                     throw ex;
                 // otherwise, throw a general error
-                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                var exception = _errorService.GetError("OMS-GENERAL-ERROR");
                 throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
             }
         }
