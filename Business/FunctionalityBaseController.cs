@@ -1,13 +1,10 @@
-﻿using Mapster;
-using Microsoft.AspNetCore.Identity;
+﻿using EntitiesCustom;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using OperationManagementService.Models;
-using OperationManagementService.OperationExceptions;
-using System.Linq;
+using OperationExceptions;
 using System.Security.Cryptography;
+using System.ServiceModel;
 
-namespace OperationManagementService.Functionality
+namespace Business
 {
     public class FunctionalityBaseController : Controller
     {
@@ -25,7 +22,7 @@ namespace OperationManagementService.Functionality
             // validate the model
             operationExceptionCode = model.Validate(operationExceptionCode);
             // if there is an operation exception code, throw an operation exception
-            if (!String.IsNullOrEmpty(operationExceptionCode))
+            if (!string.IsNullOrEmpty(operationExceptionCode))
             {
                 // get the error item from the error service
                 ErroritemServiceModel erroritemService = _errorService.GetError(operationExceptionCode);
@@ -94,7 +91,7 @@ namespace OperationManagementService.Functionality
                 if (ex is OperationException)
                     throw ex;
                 // otherwise, throw a general error
-                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                var exception = _errorService.GetError("OMS-GENERAL-ERROR");
                 throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
             }
         }
@@ -110,7 +107,7 @@ namespace OperationManagementService.Functionality
                     if (sessionLog == null || sessionId == null)
                     {
                         // if the session log is not found, throw an error
-                        var exception = this._errorService.GetError("OMS-SESSION-ERROR");
+                        var exception = _errorService.GetError("OMS-SESSION-ERROR");
                         throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
                     }
                     // close the session
@@ -134,7 +131,7 @@ namespace OperationManagementService.Functionality
                 if (ex is OperationException)
                     throw ex;
                 // otherwise, throw a general error
-                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                var exception = _errorService.GetError("OMS-GENERAL-ERROR");
                 throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details);
             }
         }

@@ -1,7 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Xml.Serialization;
-
-namespace OperationManagementService.OperationExceptions
+﻿namespace OperationExceptions
 {
     public class ErroritemServiceModel
     {
