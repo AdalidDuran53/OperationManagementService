@@ -88,7 +88,7 @@ namespace OperationManagementService.Controllers.Implementation
         public override async Task<IActionResult> DeleteUser([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId)
         {
             // Log the request
-            Dictionary<string, object> request = new Dictionary<string, object> { { "DeleteUserRequest", new object[] { "version: " + version, "userName: " + userId, "sessionId: " + sessionId } } };
+            Dictionary<string, object> request = new Dictionary<string, object> { { "DeleteUserRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId } } };
             try
             {
                 // Call the implementation
@@ -98,7 +98,7 @@ namespace OperationManagementService.Controllers.Implementation
                 // Log the response
                 Dictionary<string, object> response = new Dictionary<string, object> { { "DeleteUserResponse", result }, { "SessionLogResponse", sessionLogResponse.Result } };
                 // Log the operation
-                _serviceBaseFunctionality.LogOperation(request, response);
+                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // return the result
                 return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.Result.SessionId));
             }
@@ -106,7 +106,35 @@ namespace OperationManagementService.Controllers.Implementation
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorDeleteUserResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response);
+                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                // if the exception is an OperationException, return a bad request with the error details
+                OperationException excep = ((OperationException)ex);
+                return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
+            }
+        }
+
+        [HttpPut]
+        [Route("~/{version::apiVersion}/Users/UpdateUser")]
+        public override async Task<IActionResult> UpdateUser([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] string currentPassword, string newPassword = null, string userName = null)
+        {
+            // Log the request
+            Dictionary<string, object> request = new Dictionary<string, object> { { "UpdateUserRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "newPassword: " + !String.IsNullOrEmpty(newPassword), "newUserName: " + !String.IsNullOrEmpty(userName) } } };
+            try
+            {
+                // Call the implementation
+                var result = await _userFunctionality.UpdateUser(userId, sessionId, currentPassword, newPassword, userName);
+                // Log the response
+                Dictionary<string, object> response = new Dictionary<string, object> { { "UpdateUserResponse", result }};
+                // Log the operation
+                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                // return the result
+                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionId));
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorUpdateUserResponse", ex } };
+                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
