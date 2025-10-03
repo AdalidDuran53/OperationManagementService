@@ -1,4 +1,5 @@
-﻿using EntitiesCustom;
+﻿using Azure;
+using EntitiesCustom;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -15,24 +16,28 @@ namespace OperationManagementService.Controllers.Implementation
     public class TransactionApi : TransactionControllerBase
     {
 
-        private readonly UserFunctionality _userFunctionality;
         private readonly ServiceBaseFunctionality _serviceBaseFunctionality;
+        private readonly TransactionFunctionality _transactionFunctionality;
         private readonly ErrorServiceModel _errorService = new ErrorServiceModel();
-        public TransactionApi(UserFunctionality userFunctionality, ServiceBaseFunctionality serviceBaseFunctionality)
+        public TransactionApi(TransactionFunctionality transactionFunctionality, ServiceBaseFunctionality serviceBaseFunctionality)
         {
-            _userFunctionality = userFunctionality;
+            _transactionFunctionality = transactionFunctionality;
             _serviceBaseFunctionality = serviceBaseFunctionality;
             _errorService = new ErrorServiceModel();
         }
 
         [HttpPost]
         [Route("~/{version::apiVersion}/Transactions/AddTransaction")]
-        public override async Task<IActionResult> AddTransaction([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId)
+        public override async Task<IActionResult> AddTransaction([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] string transactionName, [Required] decimal transactionAmount)
         {
             // Log the request
-            Dictionary<string, object> request = new Dictionary<string, object> { { "CreateAddTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId } } };
+            Dictionary<string, object> request = new Dictionary<string, object> { { "CreateAddTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "transactionName: " + transactionName , "transactionAmount: " + transactionAmount } } };
             try
             {
+                // Call the implementation
+                var operationId = await _serviceBaseFunctionality.LogOperation(request, new Dictionary<string, object>(), sessionId);
+                var response = await _transactionFunctionality.AddTransaction(userId, sessionId, transactionName, transactionAmount, (int)operationId.Data);
+                await _serviceBaseFunctionality.UpdateOperation((int)operationId.Data, request, new Dictionary<string, object> { { "CreateAddTransactionResponse", response } }, sessionId);
                 // return the result
                 return Ok("ok");
             }
