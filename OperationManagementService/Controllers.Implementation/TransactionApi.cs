@@ -34,18 +34,19 @@ namespace OperationManagementService.Controllers.Implementation
             Dictionary<string, object> request = new Dictionary<string, object> { { "CreateAddTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "transactionName: " + transactionName , "transactionAmount: " + transactionAmount } } };
             try
             {
+                await _transactionFunctionality.BasicValidateTransaction(userId, sessionId, transactionName, transactionAmount);
                 // Call the implementation
                 var operationId = await _serviceBaseFunctionality.LogOperation(request, new Dictionary<string, object>(), sessionId);
-                var response = await _transactionFunctionality.AddTransaction(userId, sessionId, transactionName, transactionAmount, (int)operationId.Data);
-                await _serviceBaseFunctionality.UpdateOperation((int)operationId.Data, request, new Dictionary<string, object> { { "CreateAddTransactionResponse", response } }, sessionId);
+                var result = await _transactionFunctionality.AddTransaction(userId, sessionId, transactionName, transactionAmount, (int)operationId.Data);
+                await _serviceBaseFunctionality.UpdateOperation((int)operationId.Data, request, new Dictionary<string, object> { { "CreateAddTransactionResponse", result } }, sessionId);
                 // return the result
-                return Ok("ok");
+                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionId));
             }
             catch (Exception ex)
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorCreateAddTransactionResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response);
+                await _serviceBaseFunctionality.LogOperation(request, response);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details});
@@ -67,7 +68,7 @@ namespace OperationManagementService.Controllers.Implementation
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorUpdateTransactionResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response);
+                await _serviceBaseFunctionality.LogOperation(request, response);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode =StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
@@ -90,7 +91,7 @@ namespace OperationManagementService.Controllers.Implementation
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorDeleteTransactionResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                await _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
@@ -112,7 +113,7 @@ namespace OperationManagementService.Controllers.Implementation
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorGetTransactionsResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                await _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });

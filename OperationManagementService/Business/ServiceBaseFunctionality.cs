@@ -31,7 +31,7 @@ namespace OperationManagementService.Business
                     var newLog = Mapster.TypeAdapter.Adapt<Models.OperationLog>(newLogOperation);
                     context.OperationLogs.Add(newLog);
                     await context.SaveChangesAsync();
-                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Updated user successfully.", userId: new Guid(), sessionId: sessionId, data: newLog.OperationId);
+                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Data saved successfully.", userId: new Guid(), sessionId: sessionId, data: newLog.OperationId);
                 }
             }
             catch (Exception ex)

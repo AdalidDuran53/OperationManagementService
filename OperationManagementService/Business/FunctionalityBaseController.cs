@@ -75,7 +75,7 @@ namespace OperationManagementService.Business
                     var session = Mapster.TypeAdapter.Adapt<Models.SessionLog>(sessionLog);
                     context.SessionLogs.Add(session);
                     await context.SaveChangesAsync();
-                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Session initialized successfully.", userId: userId, sessionId: sessionLog.SessionId, data: data);
+                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Session initialized successfully.", userId: userId, sessionId: sessionLog.SessionId, data: data.Result.Data);
                 }
             }
             catch (Exception ex)
@@ -120,7 +120,7 @@ namespace OperationManagementService.Business
                 throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, sessionId: sessionId);
             }
         }
-        public async Task<CustomResponse> CloseSession(Guid sessionId)
+        public async Task<object> CloseSession(Guid sessionId)
         {
             try
             {
@@ -128,7 +128,7 @@ namespace OperationManagementService.Business
                 {
                     // find the session log by session id
                     var sessionLog = await context.SessionLogs.FirstOrDefaultAsync(s => s.SessionId == sessionId && s.EndSession == null);
-                    if (sessionLog == null || sessionId == null)
+                    if (sessionLog == null || sessionId == new Guid())
                     {
                         // if the session log is not found, throw an error
                         var exception = this._errorService.GetError("OMS-SESSION-ERROR");
@@ -141,12 +141,13 @@ namespace OperationManagementService.Business
                     // prepare the data to return
                     Dictionary<string, object> data = new Dictionary<string, object>
                     {
-                        { "UserId", sessionLog.UserId },
+                        { "message", "Session closed successfully." },
+                        { "UserId", sessionLog.UserId.GetValueOrDefault() },
                         { "SessionId", sessionLog.SessionId },
                         { "InitSession", sessionLog.InitSession },
                         { "EndSession", sessionLog.EndSession }
                     };
-                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Session closed successfully.", userId: sessionLog.UserId.GetValueOrDefault(), sessionId: sessionLog.SessionId, data: data);
+                    return data;
                 }
             }
             catch (Exception ex)
@@ -160,7 +161,7 @@ namespace OperationManagementService.Business
             }
         }
 
-        protected virtual async void ValidateSession(Guid userId, Guid sessionId)
+        protected virtual async Task ValidateSession(Guid userId, Guid sessionId)
         {
             using (var context = new Models.OperationContext())
             {
@@ -168,7 +169,7 @@ namespace OperationManagementService.Business
                 var user = await context.Users
                 .FirstOrDefaultAsync(u => u.UserId == userId && u.IsDeleted == false);
                 // load the session logs for the user
-                var SessionLogs = await context.SessionLogs.Where(s => s.UserId == userId && s.EndSession == null).ToListAsync();
+                var SessionLogs = user != null ? await context.SessionLogs.Where(s => s.UserId == userId && s.EndSession == null).ToListAsync() : new List<Models.SessionLog>();
                 // if the user is not found, the session id does not match or the current password does not match, throw an error
                 if (user == null || !SessionLogs.Any(s => s.SessionId == sessionId))
                 {
