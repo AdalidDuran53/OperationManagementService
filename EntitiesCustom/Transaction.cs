@@ -8,7 +8,7 @@ public partial class Transaction : IValidation
     {
     }
 
-    public Transaction(int? operationId, Guid? userId, string transactionName, decimal amount, DateTime transactionDate, bool? isDeleted)
+    public Transaction(int? operationId, Guid? userId, string transactionName, decimal amount, DateTime transactionDate, bool? isDeleted, bool isUpdate)
     {
         this.OperationId = operationId;
         this.UserId = userId;
@@ -16,6 +16,7 @@ public partial class Transaction : IValidation
         this.Amount = amount;
         this.TransactionDate = transactionDate;
         this.IsDeleted = isDeleted;
+        this.IsUpdate = isUpdate;
     }
     public int TransactionId { get; set; }
 
@@ -30,6 +31,7 @@ public partial class Transaction : IValidation
     public DateTime TransactionDate { get; set; }
 
     public bool? IsDeleted { get; set; }
+    public bool? IsUpdate { get; set; }
 
     public virtual OperationLog? Operation { get; set; }
 
@@ -37,9 +39,9 @@ public partial class Transaction : IValidation
 
     public string Validate(string operationExceptionCode)
     {
-        if (String.IsNullOrEmpty(this.TransactionName))
+        if (String.IsNullOrEmpty(this.TransactionName) && !this.IsUpdate.GetValueOrDefault())
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
-        else if (this.TransactionName.Length > 50)
+        if (this.TransactionName.Length > 50)
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
 
         return operationExceptionCode;
