@@ -92,7 +92,7 @@ namespace OperationManagementService.Business
         {
             try
             {
-                this.ValidateSession(userId, sessionId);
+                await this.ValidateSession(userId, sessionId);
                 using (var context = new Models.OperationContext())
                 {
                     // find the user by user name
@@ -121,7 +121,7 @@ namespace OperationManagementService.Business
         {
             try
             {
-                this.ValidateSession(userId, sessionId);
+                await this.ValidateSession(userId, sessionId);
                 using (var context = new Models.OperationContext())
                 {
                     // find the user by user name

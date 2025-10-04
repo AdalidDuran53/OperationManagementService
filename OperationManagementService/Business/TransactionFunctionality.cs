@@ -9,16 +9,15 @@ namespace OperationManagementService.Business
 {
     public class TransactionFunctionality : FunctionalityBaseController
     {
-        public async Task<ActionResult> BasicValidateTransaction(Guid userId, Guid sessionId, string transactionName, decimal transactionAmount)
+        public async Task<CustomResponse> BasicValidateTransaction(Guid userId, Guid sessionId, string transactionName, decimal transactionAmount)
         {
             try
             {
                 Transaction newTransaction = new Transaction(operationId: 0, userId: userId, transactionName: transactionName, amount: transactionAmount, transactionDate: DateTime.Now, isDeleted: false);
                 this.ValidateModel(newTransaction);
-                this.ValidateSession(userId, sessionId);
+                await this.ValidateSession(userId, sessionId);
                 // return the result
-                var result = Ok(new { success = true, message = "Validated transaction successfully." });
-                return result;
+                return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Validated transaction successfully.", userId: userId, sessionId: sessionId); ;
             }
             catch (Exception ex)
             {
@@ -30,7 +29,7 @@ namespace OperationManagementService.Business
                 throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
             }
         }
-        public async Task<ActionResult> AddTransaction(Guid userId, Guid sessionId, string transactionName, decimal transactionAmount, int operationId)
+        public async Task<CustomResponse> AddTransaction(Guid userId, Guid sessionId, string transactionName, decimal transactionAmount, int operationId)
         {
             try
             {
@@ -43,8 +42,7 @@ namespace OperationManagementService.Business
                 }
 
                 // return the result
-                var result = Ok(new { success = true, message = "Data saved successfully." });
-                return result;
+                return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Data saved successfully.", userId: userId, sessionId: sessionId); ;
             }
             catch (Exception ex)
             {
