@@ -9,7 +9,7 @@ namespace OperationManagementService.Business
 {
     public class TransactionFunctionality : FunctionalityBaseController
     {
-        public async Task<CustomResponse> BasicValidateTransaction(Guid userId, Guid sessionId, string transactionName, decimal transactionAmount, bool isUpdate)
+        public async Task<CustomResponse> BasicValidateTransaction(Guid userId, Guid sessionId, string transactionName, decimal? transactionAmount, bool isUpdate)
         {
             try
             {
@@ -55,31 +55,33 @@ namespace OperationManagementService.Business
             }
         }
 
-        public async Task<CustomResponse> UpdateTransaction(Guid userId, Guid sessionId, int trasactionId, string transactionName, decimal transactionAmount, int operationId)
+        public async Task<CustomResponse> UpdateTransaction(Guid userId, Guid sessionId, int trasactionId, string transactionName, decimal? transactionAmount, int operationId)
         {
             try
             {
-                Transaction newTransaction = new Transaction(operationId: operationId, userId: userId, transactionName: transactionName, amount: transactionAmount, transactionDate: DateTime.Now, isDeleted: false, isUpdate: false);
                 using (var context = new Models.OperationContext())
                 {
+                    // check if the transaction exists
                     var existingTransaction = await context.Transactions.FirstOrDefaultAsync(t => t.UserId == userId && t.TransactionId == trasactionId && t.IsDeleted == false);
+                    // if not, throw an exception
                     if (existingTransaction == null)
                     {
                         var exception = this._errorService.GetError("OMS-TRANSACTION-NOT-FOUND");
                         throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
                     }
-
+                    // validate if transactionName is different from existing value
                     if (existingTransaction.TransactionName != transactionName)
                         existingTransaction.TransactionName = transactionName;
-                    if (existingTransaction.Amount != transactionAmount)
-                        existingTransaction.Amount = transactionAmount;
-
+                    // validate if transactionAmount has value and is different from existing value
+                    if (existingTransaction.Amount != transactionAmount && transactionAmount.HasValue)
+                        existingTransaction.Amount = transactionAmount.GetValueOrDefault();
+                    // update the transaction
                     context.Transactions.Update(existingTransaction);
                     await context.SaveChangesAsync();
                 }
 
                 // return the result
-                return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Data saved successfully.", userId: userId, sessionId: sessionId); ;
+                return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Data updated successfully.", userId: userId, sessionId: sessionId); ;
             }
             catch (Exception ex)
             {

@@ -8,7 +8,7 @@ public partial class Transaction : IValidation
     {
     }
 
-    public Transaction(int? operationId, Guid? userId, string transactionName, decimal amount, DateTime transactionDate, bool? isDeleted, bool isUpdate)
+    public Transaction(int? operationId, Guid? userId, string transactionName, decimal? amount, DateTime transactionDate, bool? isDeleted, bool isUpdate)
     {
         this.OperationId = operationId;
         this.UserId = userId;
@@ -26,7 +26,7 @@ public partial class Transaction : IValidation
 
     public string TransactionName { get; set; } = null!;
 
-    public decimal Amount { get; set; }
+    public decimal? Amount { get; set; }
 
     public DateTime TransactionDate { get; set; }
 
@@ -39,10 +39,14 @@ public partial class Transaction : IValidation
 
     public string Validate(string operationExceptionCode)
     {
+        // When IsUpdate is true, TransactionName and Amount can be null (not updated)
         if (String.IsNullOrEmpty(this.TransactionName) && !this.IsUpdate.GetValueOrDefault())
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
         if (this.TransactionName.Length > 50)
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
+        // When IsUpdate is true, Amount can be null (not updated)
+        if (!this.Amount.HasValue && !this.IsUpdate.GetValueOrDefault())
+            operationExceptionCode = "OMS-TRANSACTIONAMOUNT-ERROR";
 
         return operationExceptionCode;
     }

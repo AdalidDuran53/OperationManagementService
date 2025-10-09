@@ -55,7 +55,7 @@ namespace OperationManagementService.Controllers.Implementation
 
         [HttpPut]
         [Route("~/{version::apiVersion}/Transactions/UpdateTransaction")]
-        public override async Task<IActionResult> UpdateTransaction([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] int transactionId, string transactionName, decimal transactionAmount)
+        public override async Task<IActionResult> UpdateTransaction([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] int transactionId, string transactionName, decimal? transactionAmount)
         {
             // Log the request
             Dictionary<string, object> request = new Dictionary<string, object> { { "UpdateTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "transactionName: " + transactionName, "transactionAmount: " + transactionAmount } } };
