@@ -25,7 +25,7 @@ namespace OperationManagementService.Controllers
         [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
         [SwaggerResponse(statusCode: 400, type: typeof(ActionResult), description: "Bab Request")]
         [SwaggerResponse(statusCode: 401, type: typeof(ActionResult), description: "Unauthorized")]
-        public abstract Task<IActionResult> UpdateTransaction([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] int transactionId, string transactionName, decimal transactionAmount);
+        public abstract Task<IActionResult> UpdateTransaction([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] int transactionId, string transactionName = null, decimal? transactionAmount = null);
 
         [HttpDelete]
         [EnableRateLimiting("IpPolicy")]
