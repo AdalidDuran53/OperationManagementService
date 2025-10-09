@@ -42,7 +42,8 @@ public partial class Transaction : IValidation
         // When IsUpdate is true, TransactionName and Amount can be null (not updated)
         if (String.IsNullOrEmpty(this.TransactionName) && !this.IsUpdate.GetValueOrDefault())
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
-        if (this.TransactionName.Length > 50)
+        // TransactionName max length is 50
+        if (!String.IsNullOrEmpty(this.TransactionName) && this.TransactionName.Length > 50)
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
         // When IsUpdate is true, Amount can be null (not updated)
         if (!this.Amount.HasValue && !this.IsUpdate.GetValueOrDefault())
