@@ -8,7 +8,7 @@ public partial class Transaction : IValidation
     {
     }
 
-    public Transaction(int? operationId, Guid? userId, string transactionName, decimal amount, DateTime transactionDate, bool? isDeleted)
+    public Transaction(int? operationId, Guid? userId, string transactionName, decimal? amount, DateTime transactionDate, bool? isDeleted, bool isUpdate)
     {
         this.OperationId = operationId;
         this.UserId = userId;
@@ -16,6 +16,7 @@ public partial class Transaction : IValidation
         this.Amount = amount;
         this.TransactionDate = transactionDate;
         this.IsDeleted = isDeleted;
+        this.IsUpdate = isUpdate;
     }
     public int TransactionId { get; set; }
 
@@ -25,11 +26,12 @@ public partial class Transaction : IValidation
 
     public string TransactionName { get; set; } = null!;
 
-    public decimal Amount { get; set; }
+    public decimal? Amount { get; set; }
 
     public DateTime TransactionDate { get; set; }
 
     public bool? IsDeleted { get; set; }
+    public bool? IsUpdate { get; set; }
 
     public virtual OperationLog? Operation { get; set; }
 
@@ -37,10 +39,15 @@ public partial class Transaction : IValidation
 
     public string Validate(string operationExceptionCode)
     {
-        if (String.IsNullOrEmpty(this.TransactionName))
+        // When IsUpdate is true, TransactionName and Amount can be null (not updated)
+        if (String.IsNullOrEmpty(this.TransactionName) && !this.IsUpdate.GetValueOrDefault())
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
-        else if (this.TransactionName.Length > 50)
+        // TransactionName max length is 50
+        if (!String.IsNullOrEmpty(this.TransactionName) && this.TransactionName.Length > 50)
             operationExceptionCode = "OMS-TRANSACTIONNAME-ERROR";
+        // When IsUpdate is true, Amount can be null (not updated)
+        if (!this.Amount.HasValue && !this.IsUpdate.GetValueOrDefault())
+            operationExceptionCode = "OMS-TRANSACTIONAMOUNT-ERROR";
 
         return operationExceptionCode;
     }

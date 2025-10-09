@@ -31,21 +31,21 @@ namespace OperationManagementService.Controllers.Implementation
         public override async Task<IActionResult> AddTransaction([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] string transactionName, [Required] decimal transactionAmount)
         {
             // Log the request
-            Dictionary<string, object> request = new Dictionary<string, object> { { "CreateAddTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "transactionName: " + transactionName , "transactionAmount: " + transactionAmount } } };
+            Dictionary<string, object> request = new Dictionary<string, object> { { "AddTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "transactionName: " + transactionName , "transactionAmount: " + transactionAmount } } };
             try
             {
-                await _transactionFunctionality.BasicValidateTransaction(userId, sessionId, transactionName, transactionAmount);
+                await _transactionFunctionality.BasicValidateTransaction(userId: userId, sessionId: sessionId, transactionName: transactionName, transactionAmount: transactionAmount, isUpdate: false);
                 // Call the implementation
                 var operationId = await _serviceBaseFunctionality.LogOperation(request, new Dictionary<string, object>(), sessionId);
                 var result = await _transactionFunctionality.AddTransaction(userId, sessionId, transactionName, transactionAmount, (int)operationId.Data);
-                await _serviceBaseFunctionality.UpdateOperation((int)operationId.Data, request, new Dictionary<string, object> { { "CreateAddTransactionResponse", result } }, sessionId);
+                await _serviceBaseFunctionality.UpdateOperation((int)operationId.Data, request, new Dictionary<string, object> { { "AddTransactionResponse", result } }, sessionId);
                 // return the result
                 return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionId));
             }
             catch (Exception ex)
             {
                 // Log the exception
-                Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorCreateAddTransactionResponse", ex } };
+                Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorAddTransactionResponse", ex } };
                 await _serviceBaseFunctionality.LogOperation(request, response);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
@@ -55,14 +55,19 @@ namespace OperationManagementService.Controllers.Implementation
 
         [HttpPut]
         [Route("~/{version::apiVersion}/Transactions/UpdateTransaction")]
-        public override async Task<IActionResult> UpdateTransaction([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId)
+        public override async Task<IActionResult> UpdateTransaction([FromRoute, RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$"), Required] string version, [Required] Guid userId, [Required] Guid sessionId, [Required] int transactionId, string transactionName = null, decimal? transactionAmount = null)
         {
             // Log the request
-            Dictionary<string, object> request = new Dictionary<string, object> { { "UpdateTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId } } };
+            Dictionary<string, object> request = new Dictionary<string, object> { { "UpdateTransactionRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "transactionName: " + transactionName, "transactionAmount: " + transactionAmount } } };
             try
             {
+                await _transactionFunctionality.BasicValidateTransaction(userId: userId, sessionId: sessionId, transactionName: transactionName, transactionAmount: transactionAmount, isUpdate: true);
+                // Call the implementation
+                var operationId = await _serviceBaseFunctionality.LogOperation(request, new Dictionary<string, object>(), sessionId);
+                var result = await _transactionFunctionality.UpdateTransaction(userId, sessionId, transactionId, transactionName, transactionAmount, (int)operationId.Data);
+                await _serviceBaseFunctionality.UpdateOperation((int)operationId.Data, request, new Dictionary<string, object> { { "UpdateTransactionResponse", result } }, sessionId);
                 // return the result
-                return Ok("ok");
+                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionId));
             }
             catch (Exception ex)
             {
