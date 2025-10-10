@@ -32,6 +32,7 @@ builder.Services.AddApiVersioning(setup =>
 builder.Services.AddScoped<FunctionalityBaseController>();
 builder.Services.AddScoped<UserFunctionality>();
 builder.Services.AddScoped<ServiceBaseFunctionality>();
+builder.Services.AddScoped<TransactionFunctionality>();
 builder.Services.Configure<RateLimitingOptions>(
     builder.Configuration.GetSection("RateLimiting"));
 

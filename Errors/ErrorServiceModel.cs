@@ -67,6 +67,23 @@
                 message: "unexpected error.",
                 details: "An unexpected error has occurred in the service. Please try again later or contact the administrator if the problem persists."));
             #endregion
+
+            #region Transactions
+            errors.Add("OMS-TRANSACTIONNAME-ERROR", new ErroritemServiceModel(
+                code: "OMS-TRANSACTIONNAME-ERROR",
+                message: "Invalid transaction name.",
+                details: "The transaction name is not valid. It must be between 1 and 50 characters long."));
+
+            errors.Add("OMS-TRANSACTION-NOT-FOUND", new ErroritemServiceModel(
+                code: "OMS-TRANSACTION-NOT-FOUND",
+                message: "Invalid transaction.",
+                details: "The transaction is not valid."));
+
+            errors.Add("OMS-TRANSACTIONAMOUNT-ERROR", new ErroritemServiceModel(
+                code: "OMS-TRANSACTIONAMOUNT-ERROR",
+                message: "Invalid transaction amount.",
+                details: "The transaction amount is not valid."));
+            #endregion
         }
     }
 }

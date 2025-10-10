@@ -38,7 +38,7 @@ namespace OperationManagementService.Controllers.Implementation
                 // Log the response
                 Dictionary<string, object> response = new Dictionary<string, object> { { "CreateNewUserResponse", result } };
                 // Log the operation
-                _serviceBaseFunctionality.LogOperation(request, response);
+                await _serviceBaseFunctionality.LogOperation(request, response);
                 // return the result
                 return Ok(result);
             }
@@ -46,7 +46,7 @@ namespace OperationManagementService.Controllers.Implementation
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorCreateNewUserResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response);
+                await _serviceBaseFunctionality.LogOperation(request, response);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details});
@@ -64,18 +64,18 @@ namespace OperationManagementService.Controllers.Implementation
                 // Call the implementation
                 var result = await _userFunctionality.LoginUser(userName, password);
                 // Log the response
-                var sessionLogResponse = _serviceBaseFunctionality.InitSession(result.UserId);
-                Dictionary<string, object> response = new Dictionary<string, object> { { "LoginResponse", result }, { "SessionLogResponse", sessionLogResponse.Result } };
+                var sessionLogResponse = await _serviceBaseFunctionality.InitSession(result.UserId);
+                Dictionary<string, object> response = new Dictionary<string, object> { { "LoginResponse", result }, { "SessionLogResponse", sessionLogResponse } };
                 // Log the operation
-                _serviceBaseFunctionality.LogOperation(request, response);
+                await _serviceBaseFunctionality.LogOperation(request, response);
                 // return the result // OMS-13 update to include session id in the response
-                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.Result.SessionId));
+                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.SessionId));
             }
             catch (Exception ex)
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorLoginResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response);
+                await _serviceBaseFunctionality.LogOperation(request, response);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode =StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
@@ -98,7 +98,7 @@ namespace OperationManagementService.Controllers.Implementation
                 // Log the response
                 Dictionary<string, object> response = new Dictionary<string, object> { { "DeleteUserResponse", result }, { "SessionLogResponse", sessionLogResponse.Result } };
                 // Log the operation
-                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                await _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // return the result
                 return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionLogResponse.Result.SessionId));
             }
@@ -106,7 +106,7 @@ namespace OperationManagementService.Controllers.Implementation
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorDeleteUserResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                await _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
@@ -126,7 +126,7 @@ namespace OperationManagementService.Controllers.Implementation
                 // Log the response
                 Dictionary<string, object> response = new Dictionary<string, object> { { "UpdateUserResponse", result }};
                 // Log the operation
-                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                await _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // return the result
                 return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionId));
             }
@@ -134,7 +134,7 @@ namespace OperationManagementService.Controllers.Implementation
             {
                 // Log the exception
                 Dictionary<string, object> response = new Dictionary<string, object> { { "ErrorUpdateUserResponse", ex } };
-                _serviceBaseFunctionality.LogOperation(request, response, sessionId);
+                await _serviceBaseFunctionality.LogOperation(request, response, sessionId);
                 // if the exception is an OperationException, return a bad request with the error details
                 OperationException excep = ((OperationException)ex);
                 return this.BadRequest(new { StatusCode = StatusCodes.Status400BadRequest, code = excep.ErrorCode, message = excep.Message, details = excep.Details });
