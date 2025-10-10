@@ -94,5 +94,42 @@ namespace OperationManagementService.Business
             }
         }
 
+        public async Task<CustomResponse> DeleteTransaction(Guid userId, Guid sessionId, int trasactionId)
+        {
+            try
+            {
+                // validate the session
+                await this.ValidateSession(userId, sessionId);
+                using (var context = new Models.OperationContext())
+                {
+                    // check if the transaction exists
+                    var existingTransaction = await context.Transactions.FirstOrDefaultAsync(t => t.UserId == userId && t.TransactionId == trasactionId && t.IsDeleted == false);
+                    // if not, throw an exception
+                    if (existingTransaction == null)
+                    {
+                        var exception = this._errorService.GetError("OMS-TRANSACTION-NOT-FOUND");
+                        throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
+                    }
+                    // mark the transaction as deleted
+                    existingTransaction.IsDeleted = true;
+                    // update the transaction
+                    context.Transactions.Update(existingTransaction);
+                    await context.SaveChangesAsync();
+                }
+
+                // return the result
+                return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Deleted successfully.", userId: userId, sessionId: sessionId); ;
+            }
+            catch (Exception ex)
+            {
+                // if the exception is an OperationException, rethrow it
+                if (ex is OperationException)
+                    throw ex;
+                // otherwise, throw a general error
+                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
+            }
+        }
+
     }
 }
