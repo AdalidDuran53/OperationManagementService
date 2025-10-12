@@ -1,5 +1,6 @@
 ﻿using Azure;
 using EntitiesCustom;
+using Mapster;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OperationExceptions;
@@ -131,5 +132,51 @@ namespace OperationManagementService.Business
             }
         }
 
+        public async Task<CustomResponse> GetTransactions(Guid userId, Guid sessionId, int? trasactionId)
+        {
+            try
+            {
+                // validate the session
+                await this.ValidateSession(userId, sessionId);
+                using (var context = new Models.OperationContext())
+                {
+                    // init the list of transactions
+                    List<Models.Transaction> existingTransactions = new List<Models.Transaction>();
+                    // if trasactionId has value, get the specific transaction
+                    if (trasactionId.HasValue)
+                    {
+                        // check if the transaction exists
+                       var transaction = await context.Transactions.FirstOrDefaultAsync(t => t.UserId == userId && t.TransactionId == trasactionId && t.IsDeleted == false);
+                        // if not, throw an exception
+                        if (transaction == null)
+                        {
+                            var exception = this._errorService.GetError("OMS-TRANSACTION-NOT-FOUND");
+                            throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
+                        } 
+                        else
+                            existingTransactions.Add(transaction);
+                    } 
+                    else
+                    {
+                        // get all transactions for the user
+                        existingTransactions = await context.Transactions.Where(t => t.UserId == userId && t.IsDeleted == false).ToListAsync();
+                    }
+
+                    var transactionsResult = existingTransactions.Adapt<List<Transaction>>();
+                    // return the result
+                    return new CustomResponse(statusCode: StatusCodes.Status200OK, message: "Get data successfully.", userId: userId, sessionId: sessionId, data: transactionsResult);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                // if the exception is an OperationException, rethrow it
+                if (ex is OperationException)
+                    throw ex;
+                // otherwise, throw a general error
+                var exception = this._errorService.GetError("OMS-GENERAL-ERROR");
+                throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
+            }
+        }
     }
 }
