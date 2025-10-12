@@ -1,5 +1,6 @@
 ﻿using OperationExceptions;
 
+using System.Text.Json.Serialization;
 namespace EntitiesCustom;
 
 public partial class Transaction : IValidation
@@ -29,13 +30,11 @@ public partial class Transaction : IValidation
     public decimal? Amount { get; set; }
 
     public DateTime TransactionDate { get; set; }
-
     public bool? IsDeleted { get; set; }
+
+    // This property is used to indicate if the operation is an update or a create
+    [JsonIgnore]
     public bool? IsUpdate { get; set; }
-
-    public virtual OperationLog? Operation { get; set; }
-
-    public virtual User? User { get; set; }
 
     public string Validate(string operationExceptionCode)
     {
