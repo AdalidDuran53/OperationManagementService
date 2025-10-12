@@ -146,13 +146,15 @@ namespace OperationManagementService.Business
                     if (trasactionId.HasValue)
                     {
                         // check if the transaction exists
-                        existingTransactions.Add(await context.Transactions.FirstOrDefaultAsync(t => t.UserId == userId && t.TransactionId == trasactionId && t.IsDeleted == false));
+                       var transaction = await context.Transactions.FirstOrDefaultAsync(t => t.UserId == userId && t.TransactionId == trasactionId && t.IsDeleted == false);
                         // if not, throw an exception
-                        if (existingTransactions.Count == 0)
+                        if (transaction == null)
                         {
                             var exception = this._errorService.GetError("OMS-TRANSACTION-NOT-FOUND");
                             throw new OperationException(errorCode: exception.Code, message: exception.Message, details: exception.Details, new Guid());
-                        }
+                        } 
+                        else
+                            existingTransactions.Add(transaction);
                     } 
                     else
                     {
