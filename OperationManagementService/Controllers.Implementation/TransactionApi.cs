@@ -111,14 +111,20 @@ namespace OperationManagementService.Controllers.Implementation
 
         [HttpGet]
         [Route("~/{version::apiVersion}/Transactions/GetTransactions")]
-        public override async Task<IActionResult> GetTransactions([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] Guid userId, [Required] Guid sessionId)
+        public override async Task<IActionResult> GetTransactions([FromRoute][Required][RegularExpression("^(?<major>[0-9]+).(?<major>[0-9]+)$")] string version, [Required] Guid userId, [Required] Guid sessionId, int? transactionId)
         {
             // Log the request
-            Dictionary<string, object> request = new Dictionary<string, object> { { "GetTransactionsRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId } } };
+            Dictionary<string, object> request = new Dictionary<string, object> { { "GetTransactionsRequest", new object[] { "version: " + version, "userId: " + userId, "sessionId: " + sessionId, "transactionId: " + transactionId } } };
             try
             {
+                // log the operation
+                var operationId = await _serviceBaseFunctionality.LogOperation(request, new Dictionary<string, object>(), sessionId);
+                // Call the implementation
+                var result = await _transactionFunctionality.GetTransactions(userId, sessionId, transactionId);
+                // Update the operation log
+                await _serviceBaseFunctionality.UpdateOperation((int)operationId.Data, request, new Dictionary<string, object> { { "GetTransactionsRequest", result } }, sessionId);
                 // return the result
-                return Ok("ok");
+                return Ok(new CustomResponse(statusCode: StatusCodes.Status200OK, message: result.Message, userId: result.UserId, sessionId: sessionId, data: result.Data));
             }
             catch (Exception ex)
             {
