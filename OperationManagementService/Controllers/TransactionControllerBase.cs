@@ -38,6 +38,7 @@ namespace OperationManagementService.Controllers
         [HttpGet]
         [EnableRateLimiting("IpPolicy")]
         [Route("~/{version}/Transactions/")]
+        [SwaggerOperation(Summary = "Get Transactions", Description = "Get Transactions")]
         [SwaggerResponse(statusCode: 200, type: typeof(ActionResult), description: "Ok")]
         [SwaggerResponse(statusCode: 400, type: typeof(ActionResult), description: "Bab Request")]
         [SwaggerResponse(statusCode: 401, type: typeof(ActionResult), description: "Unauthorized")]
